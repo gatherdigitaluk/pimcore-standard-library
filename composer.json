@@ -1,0 +1,26 @@
+{
+  "name": "gatherdigital-pimcore/standard-library",
+  "type": "library",
+  "description": "Gather Digital Pimcore Library",
+  "keywords": ["gather", "pimcore"],
+  "homepage": "https://github.com/gatherdigitaluk/pimcore-standard-library",
+  "license": "GPL-3.0",
+  "authors": [
+    {
+      "name": "Paul Clegg",
+      "email": "paul@gatherdigital.co.uk",
+      "role": "Developer"
+    },
+    {
+      "name": "Thom Barlow",
+      "email": "thom@gatherdigital.co.uk",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.6"
+  },
+  "autoload": {
+    "psr-4": {"Gdl\\Pimcore\\": "src/"}
+  }
+}

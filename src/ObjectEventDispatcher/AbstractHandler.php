@@ -11,7 +11,7 @@
  * @license    https://www.gatherdigital.co.uk/license     GNU General Public License version 3 (GPLv3)
  */
 
-namespace Gdl\Pimcore\EventDispatcher;
+namespace Gdl\Pimcore\ObjectEventDispatcher;
 
 use Pimcore\Tool\Admin;
 
@@ -43,9 +43,11 @@ class AbstractHandler
      */
     public function __construct($event, $function)
     {
+        $this->event = $event;
         $this->new = $event->getTarget();
         $this->old = $this->initOldVersion();
         $this->user = Admin::getCurrentUser();
+        $this->function = $function;
     }
 
     /**
@@ -81,45 +83,28 @@ class AbstractHandler
         return $previousVersion->loadData();
     }
 
-    /**
-     * @param $event
-     */
-    public function preAdd($event) {
+
+    public function preAdd() {
         return true;
     }
 
-    /**
-     * @param $event
-     */
-    public function postAdd($event) {
+    public function postAdd() {
         return true;
     }
 
-    /**
-     * @param $event
-     */
-    public function preUpdate($event) {
+    public function preUpdate() {
         return true;
     }
 
-    /**
-     * @param $event
-     */
-    public function postUpdate($event) {
+    public function postUpdate() {
         return true;
     }
 
-    /**
-     * @param $event
-     */
-    public function preDelete($event) {
+    public function preDelete() {
         return true;
     }
 
-    /**
-     * @param $event
-     */
-    public function postDelete($event) {
+    public function postDelete() {
         return true;
     }
 

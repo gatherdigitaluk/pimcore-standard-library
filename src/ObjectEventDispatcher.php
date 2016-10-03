@@ -1,7 +1,7 @@
 <?php
 
 /**
- * EventDispatcher
+ * ObjectEventDispatcher
  *
  * This source file is subject to the GNU General Public License version 3 (GPLv3)
  * For the full copyright and license information, please view the LICENSE.md
@@ -13,15 +13,17 @@
 
 namespace Gdl\Pimcore;
 
-class EventDispatcher
+class ObjectEventDispatcher
 {
+
+    public static $objectEventDispatcher;
 
     /**
      * @var mixed $config
      */
     protected $config;
 
-    public function __construct($config)
+    public function __construct($config = null)
     {
         $this->config = $config;
 
@@ -31,25 +33,21 @@ class EventDispatcher
 
     }
 
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
     /**
      * Registers itself with the Pimcore event manager
      */
     public function initialise()
     {
-        if (\Zend_Registry::isRegistered('gdl_pimcore_eventdispatcher')) {
-            throw new \Exception('Dispatcher is already initialised');
+        if (isset(ObjectEventDispatcher::$eventDispatcher)) {
+            throw new \Exception('ObjectEventDispatcher already setup');
         }
 
         $eventManager = \Pimcore::getEventManager();
-        $eventDispatcherService = '\\Gdl\\Pimcore\\EventDispatcher\\Service';
-
-        //Documents
-        $eventManager->attach("document.preAdd", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("document.postAdd", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("document.preUpdate", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("document.postUpdate", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("document.preDelete", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("document.postDelete", [__CLASS__, 'dispatchEvent']);
 
         //Object
         $eventManager->attach("object.preAdd", [__CLASS__, 'dispatchEvent']);
@@ -59,29 +57,31 @@ class EventDispatcher
         $eventManager->attach("object.preDelete", [__CLASS__, 'dispatchEvent']);
         $eventManager->attach("object.postDelete", [__CLASS__, 'dispatchEvent']);
 
-        //Asset
-        $eventManager->attach("asset.preAdd", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("asset.postAdd", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("asset.preUpdate", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("asset.postUpdate", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("asset.preDelete", [__CLASS__, 'dispatchEvent']);
-        $eventManager->attach("asset.postDelete", [__CLASS__, 'dispatchEvent']);
-
+        ObjectEventDispatcher::$objectEventDispatcher = $this;
     }
 
-    public function addEventHandler($pimcoreClass, $eventHandlerClass)
+    public function addEventHandler($objectClass, $eventHandlerClass)
     {
+        $classDefinition = \Pimcore\Model\Object\ClassDefinition::getByName($objectClass);
+        if (!$classDefinition) {
+            throw new \Exception('Specified Pimcore Class Definition does not exist');
+        }
+
+        $pimcoreClass = '\\Pimcore\\Model\\Object\\' . $objectClass;
+
         if (!\Pimcore\Tool::classExists($pimcoreClass)) {
-            throw new \Exception('Specified Pimcore Class does not exist');
-        } else if (!\Pimcore\Tool::classExists($eventHandlerClass)){
-            throw new \Exception('Specified Event Handler class does not exist');
+            throw new \Exception('Specified Pimcore Class Definition does not exist');
+        } else {
+            if (!\Pimcore\Tool::classExists($eventHandlerClass)) {
+                throw new \Exception('Specified Event Handler class does not exist');
+            }
         }
 
         $this->config['handlers'][$pimcoreClass] = $eventHandlerClass;
     }
 
 
-    public function dispatchEvent($event)
+    public static function dispatchEvent($event)
     {
         if (self::isDisabled()) {
             return true;
@@ -98,14 +98,18 @@ class EventDispatcher
             return true;
         }
 
-        $classname = get_class($target);
-        if (array_key_exists($classname, $this->config['handlers'])) {
-            $handlerclass = $this->config['handlers'][$classname];
+        $config = ObjectEventDispatcher::$objectEventDispatcher->getConfig();
+        $classname = '\\' . get_class($target);
 
-            $eventClass = new $handlerclass();
-            if (!$eventClass instanceof EventDispatcher\AbstractHandler) {
-                throw new \Exception('Event Handler class needs to extend \'Gdl\\Pimcore\\EventDispatcher\\AbstractHandler\'');
+        if (array_key_exists($classname, $config['handlers'])) {
+
+            $handlerclass = $config['handlers'][$classname];
+
+            $eventClass = new $handlerclass($event, $eventFunction);
+            if (!$eventClass instanceof ObjectEventDispatcher\AbstractHandler) {
+                throw new \Exception('Event Handler class needs to extend \'Gdl\\Pimcore\\ObjectEventDispatcher\\AbstractHandler\'');
             }
+
             return $eventClass->init($eventFunction);
         }
 

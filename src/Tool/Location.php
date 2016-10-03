@@ -22,7 +22,7 @@ class Location
      * Uses the geocode.gatherdigital.co.uk endpoint to
      * return a location
      * @param string $postcode
-     * @return Geopoint
+     * @return Geopoint|bool
      */
     public static function getGeopointFromPostcode($postcode)
     {

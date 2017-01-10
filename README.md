@@ -4,4 +4,4 @@ Gather's standard library for Pimcore
 
 ### Documentation
 
-* [ObjectEventDispatcher](./01_ObjectEventDispatcher/README.md)
+* [ObjectEventDispatcher](./docs/01_ObjectEventDispatcher/README.md)

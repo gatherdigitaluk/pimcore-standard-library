@@ -38,7 +38,8 @@ class AbstractHandler
 
     /**
      * A generic implementation of an object event handler
-     * @param $event
+     *
+     * @param $event \Zend_EventManager_Event
      * @param $function
      */
     public function __construct($event, $function)
@@ -48,14 +49,6 @@ class AbstractHandler
         $this->old = $this->initOldVersion();
         $this->user = Admin::getCurrentUser();
         $this->function = $function;
-    }
-
-    /**
-     *
-     */
-    public function init($eventName)
-    {
-        return $this->$eventName();
     }
 
     /**
@@ -69,11 +62,11 @@ class AbstractHandler
         $previousVersion = null;
 
         //get the previous versions no matter what
-        if(count($versions)) {
+        if (count($versions)) {
             $previousVersion = $versions[0];
         }
 
-        if(!$previousVersion) {
+        if (!$previousVersion) {
             return null; //no old version
         }
 
@@ -83,28 +76,41 @@ class AbstractHandler
         return $previousVersion->loadData();
     }
 
+    /**
+     *
+     */
+    public function init($eventName)
+    {
+        return $this->$eventName();
+    }
 
-    public function preAdd() {
+    public function preAdd()
+    {
         return true;
     }
 
-    public function postAdd() {
+    public function postAdd()
+    {
         return true;
     }
 
-    public function preUpdate() {
+    public function preUpdate()
+    {
         return true;
     }
 
-    public function postUpdate() {
+    public function postUpdate()
+    {
         return true;
     }
 
-    public function preDelete() {
+    public function preDelete()
+    {
         return true;
     }
 
-    public function postDelete() {
+    public function postDelete()
+    {
         return true;
     }
 

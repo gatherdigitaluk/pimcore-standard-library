@@ -18,14 +18,15 @@ use Pimcore\Tool\Admin;
 class AbstractHandler
 {
 
-
     /**
      * The previous version of the object
+     * @var $old \Pimcore\Model\Object\Concrete
      */
     public $old;
 
     /**
      * The object data just saved
+     * @var $new \Pimcore\Model\Object\Concrete
      */
     public $new;
 
@@ -52,13 +53,20 @@ class AbstractHandler
     }
 
     /**
-     * Returns the previous version of an object
+     * Returns the previous version of an object if it can be loaded succcessfully
      *
-     * @return \Pimcore\Model\Object
+     * @return \Pimcore\Model\Object\Concrete|null
      */
     protected function initOldVersion()
     {
-        $versions = $this->new->getVersions();
+        try {
+            $versions = $this->new->getVersions();
+        } catch(\Exception $e) {
+            // in case no versions are available or a version fetch fails
+            // set versions as empty array
+            $versions = [];
+        }
+
         $previousVersion = null;
 
         //get the previous versions no matter what
@@ -73,7 +81,12 @@ class AbstractHandler
         /**
          * @var \Pimcore\Model\Version $previousVersion
          */
-        return $previousVersion->loadData();
+        try {
+            return $previousVersion->loadData();
+        } catch (\Exception $e) {
+            // also catch any issues with loading the actual version
+            return null;
+        }
     }
 
     /**
